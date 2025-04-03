@@ -379,7 +379,7 @@ with st.sidebar:
 
                 # Get initial full list of students for the dropdown default
                 if 'student_number' in df.columns:
-                all_student_numbers = sorted(df['student_number'].astype(str).unique().tolist())
+                    all_student_numbers = sorted(df['student_number'].astype(str).unique().tolist())
                 else:
                     all_student_numbers = [] # Should not happen if load_data checks pass
     
@@ -837,13 +837,13 @@ else:
         st.stop()
     else:
         # Proceed with analysis only if we have data and valid thresholds
-            df_processed = add_ai_category(df_filtered, ai_score_col, low_ai_threshold, high_ai_threshold)
+        df_processed = add_ai_category(df_filtered, ai_score_col, low_ai_threshold, high_ai_threshold)
 
-            students_with_low = df_processed[df_processed['ai_category'] == 'Low (Baseline)']['student_number'].unique()
-            students_with_high = df_processed[df_processed['ai_category'] == 'High (Target)']['student_number'].unique()
+        students_with_low = df_processed[df_processed['ai_category'] == 'Low (Baseline)']['student_number'].unique()
+        students_with_high = df_processed[df_processed['ai_category'] == 'High (Target)']['student_number'].unique()
         target_students = list(set(students_with_low) & set(students_with_high))
 
-            if not target_students:
+        if not target_students:
             st.warning("No students found with both 'Low (Baseline)' and 'High (Target)' submissions after filters. Consider adjusting filters.")
             if st.checkbox("Show Filtered Data Table (No Baseline/Target Pairs Found)"):
                 st.subheader("Filtered Data")
@@ -852,25 +852,25 @@ else:
                 if other_ai_col in df_processed.columns and other_ai_col not in display_cols_basic:
                     ai_score_index = display_cols_basic.index(ai_score_col) if ai_score_col in display_cols_basic else -1
                     if ai_score_index != -1:
-                         display_cols_basic.insert(ai_score_index + 1, other_ai_col)
+                        display_cols_basic.insert(ai_score_index + 1, other_ai_col)
                 st.dataframe(df_processed[display_cols_basic])
             st.stop()
-            else:
-                st.info(f"Analyzing {len(target_students)} students with both baseline and target submissions.")
+        else:
+            st.info(f"Analyzing {len(target_students)} students with both baseline and target submissions.")
 
             metrics_to_analyze = [selected_metric] if selected_metric != "no_metric_available" else []
-                if not metrics_to_analyze:
+            if not metrics_to_analyze:
                 st.error("No valid metric selected for analysis! Please select one.")
                 st.stop()
             elif selected_metric not in df_processed.columns or not pd.api.types.is_numeric_dtype(df_processed[selected_metric]):
                 st.error(f"Selected metric '{selected_metric}' is not numeric or not found in processed data.")
                 st.stop()
-                else:
+            else:
                 # Calculate Baselines
-                    baseline_stats = calculate_baselines(df_processed[df_processed['student_number'].isin(target_students)],
-                                                        ai_score_col, low_ai_threshold, metrics_to_analyze)
+                baseline_stats = calculate_baselines(df_processed[df_processed['student_number'].isin(target_students)],
+                                                    ai_score_col, low_ai_threshold, metrics_to_analyze)
 
-                    if not baseline_stats:
+                if not baseline_stats:
                     st.warning("Could not calculate baselines. Ensure enough 'Low AI' submissions exist.")
                     st.stop()
                 else:
@@ -885,10 +885,10 @@ else:
                         st.stop()
                     else:
                         deviation_col_name = f'{selected_metric}_deviation'
-                            high_ai_subs[deviation_col_name] = high_ai_subs.apply(
-                                lambda row: calculate_deviation(row, baseline_stats, selected_metric, deviation_method), axis=1
-                            )
-                            valid_deviations = high_ai_subs.dropna(subset=[deviation_col_name])
+                        high_ai_subs[deviation_col_name] = high_ai_subs.apply(
+                            lambda row: calculate_deviation(row, baseline_stats, selected_metric, deviation_method), axis=1
+                        )
+                        valid_deviations = high_ai_subs.dropna(subset=[deviation_col_name])
 
                         if valid_deviations.empty:
                             st.warning(f"Could not calculate valid deviations for '{selected_metric}'. Check data and baseline calculation.")
@@ -941,31 +941,31 @@ else:
                             if valid_deviations.empty:
                                 st.warning(f"No data remaining after Z-score outlier filter. Adjust threshold or disable filter.")
                                 if outliers_removed > 0 and st.button("Show Plot Before Outlier Filter"):
-                                     valid_deviations = initial_valid_deviations # Restore for plot
-                            else:
-                                     st.stop()
+                                    valid_deviations = initial_valid_deviations # Restore for plot
+                                else:
+                                    st.stop()
                             
                             # --- Start Plotting and Display --- 
-                                st.header(f"Analysis for Metric: `{selected_metric}`")
+                            st.header(f"Analysis for Metric: `{selected_metric}`")
 
                             # Deviation Distribution Plot
-                                st.subheader(f"Deviation of High AI Submissions (Method: {deviation_method})")
-                                st.markdown(f"""
+                            st.subheader(f"Deviation of High AI Submissions (Method: {deviation_method})")
+                            st.markdown(f"""
                             Distribution of deviations for `{selected_metric}`. Each point represents a 'High (Target)' submission,
                             showing its difference from that student's baseline ('Low') submissions.
-                                """)
+                            """)
 
-                                fig_dev = px.histogram(valid_deviations, x=deviation_col_name,
-                                                    title=f"Distribution of '{selected_metric}' Deviations",
-                                                        labels={deviation_col_name: f"Deviation ({deviation_method})"},
-                                                    marginal="box",
-                                            hover_data=[col for col in ['student_number', 'exam_title', 'Subject', 'Subject Category', ai_score_col, selected_metric] if col in valid_deviations.columns],
-                                            nbins=num_bins
-                                            )
-                                fig_dev.update_layout(bargap=0.1)
-                                st.plotly_chart(fig_dev, use_container_width=True)
+                            fig_dev = px.histogram(valid_deviations, x=deviation_col_name,
+                                                title=f"Distribution of '{selected_metric}' Deviations",
+                                                labels={deviation_col_name: f"Deviation ({deviation_method})"},
+                                                marginal="box",
+                                                hover_data=[col for col in ['student_number', 'exam_title', 'Subject', 'Subject Category', ai_score_col, selected_metric] if col in valid_deviations.columns],
+                                                nbins=num_bins
+                                                )
+                            fig_dev.update_layout(bargap=0.1)
+                            st.plotly_chart(fig_dev, use_container_width=True)
 
-                                st.markdown(f"""
+                            st.markdown(f"""
                             *   **Z-score:** Values far from 0 (e.g., > |2|) indicate significant deviation.
                             *   **Raw Difference:** Shows absolute difference from the student's average baseline.
                             *   **Percent Difference:** Shows percentage change relative to the student's average baseline.
@@ -975,22 +975,22 @@ else:
                             final_student_list_for_analysis = sorted(df_processed['student_number'].unique().tolist())
                             is_focus_student_valid = (focus_student != "All Students (Aggregate View)") and (focus_student in final_student_list_for_analysis)
 
-                                if focus_student != "All Students (Aggregate View)":
+                            if focus_student != "All Students (Aggregate View)":
                                 if is_focus_student_valid:
                                     st.subheader(f"Detailed View for Student: {focus_student}")
                                     student_df = df_processed[df_processed['student_number'] == focus_student].copy()
 
                                     # Ensure deviation calculation happens for this student's data
-                                        student_df_deviation_col = f'{selected_metric}_deviation'
+                                    student_df_deviation_col = f'{selected_metric}_deviation'
                                     # Check if baseline exists before calculating deviation
                                     if focus_student in baseline_stats:
                                         student_df[student_df_deviation_col] = student_df.apply(
-                                             lambda row: calculate_deviation(row, baseline_stats, selected_metric, deviation_method), axis=1
-                                         )
+                                            lambda row: calculate_deviation(row, baseline_stats, selected_metric, deviation_method), axis=1
+                                        )
                                     else:
-                                         student_df[student_df_deviation_col] = np.nan # No baseline, no deviation
+                                        student_df[student_df_deviation_col] = np.nan # No baseline, no deviation
 
-                                        fig_student = go.Figure()
+                                    fig_student = go.Figure()
 
                                     # Add points for different AI categories
                                     for category, color, symbol, size in [
@@ -1017,33 +1017,33 @@ else:
                                             ))
 
                                     # Add baseline lines if available
-                                        if focus_student in baseline_stats and f'{selected_metric}_mean' in baseline_stats[focus_student]:
-                                            mean_val = baseline_stats[focus_student][f'{selected_metric}_mean']
-                                            std_val = baseline_stats[focus_student].get(f'{selected_metric}_std', np.nan)
-                                            count_val = baseline_stats[focus_student].get(f'{selected_metric}_count', 0)
+                                    if focus_student in baseline_stats and f'{selected_metric}_mean' in baseline_stats[focus_student]:
+                                        mean_val = baseline_stats[focus_student][f'{selected_metric}_mean']
+                                        std_val = baseline_stats[focus_student].get(f'{selected_metric}_std', np.nan)
+                                        count_val = baseline_stats[focus_student].get(f'{selected_metric}_count', 0)
 
-                                            if not pd.isna(mean_val):
+                                        if not pd.isna(mean_val):
                                             fig_student.add_hline(y=mean_val, line_dash="dash", line_color="green", annotation_text=f"Baseline Mean ({int(count_val)} exams)")
                                             if not pd.isna(std_val) and std_val > 1e-9:
-                                                    fig_student.add_hline(y=mean_val + 2*std_val, line_dash="dot", line_color="orange", annotation_text="+2 Std Dev")
-                                                    fig_student.add_hline(y=mean_val - 2*std_val, line_dash="dot", line_color="orange", annotation_text="-2 Std Dev")
+                                                fig_student.add_hline(y=mean_val + 2*std_val, line_dash="dot", line_color="orange", annotation_text="+2 Std Dev")
+                                                fig_student.add_hline(y=mean_val - 2*std_val, line_dash="dot", line_color="orange", annotation_text="-2 Std Dev")
 
-                                        fig_student.update_layout(
-                                            title=f"{selected_metric} Trend for Student {focus_student}",
-                                            xaxis_title="Exam ID (Not necessarily chronological)",
-                                            yaxis_title=selected_metric,
-                                            hovermode="closest"
-                                        )
-                                        st.plotly_chart(fig_student, use_container_width=True)
+                                    fig_student.update_layout(
+                                        title=f"{selected_metric} Trend for Student {focus_student}",
+                                        xaxis_title="Exam ID (Not necessarily chronological)",
+                                        yaxis_title=selected_metric,
+                                        hovermode="closest"
+                                    )
+                                    st.plotly_chart(fig_student, use_container_width=True)
 
-                                        st.write("Data for selected student:")
+                                    st.write("Data for selected student:")
                                     display_cols = [col for col in ['exam_id', 'exam_title', 'Subject', 'Subject Category', ai_score_col, 'ai_category', selected_metric, student_df_deviation_col] if col in student_df.columns]
                                     other_ai_col = 'average_ai_score_across_all_questions' if ai_score_col == 'max_ai_score_of_all_questions' else 'max_ai_score_of_all_questions'
                                     if other_ai_col in student_df.columns and other_ai_col not in display_cols:
                                         ai_score_index = display_cols.index(ai_score_col) if ai_score_col in display_cols else -1
                                         if ai_score_index != -1:
-                                             display_cols.insert(ai_score_index + 1, other_ai_col)
-                                        st.dataframe(student_df[display_cols].sort_values(by='exam_id'))
+                                            display_cols.insert(ai_score_index + 1, other_ai_col)
+                                    st.dataframe(student_df[display_cols].sort_values(by='exam_id'))
                                 else:
                                     st.warning(f"Student '{focus_student}' selected, but data removed by filters. Choose another student or adjust filters.")
 
@@ -1059,7 +1059,7 @@ else:
                                 if other_ai_col in df_processed.columns and other_ai_col not in display_cols_processed:
                                     ai_score_index = display_cols_processed.index(ai_score_col) if ai_score_col in display_cols_processed else -1
                                     if ai_score_index != -1:
-                                         display_cols_processed.insert(ai_score_index + 1, other_ai_col)
+                                        display_cols_processed.insert(ai_score_index + 1, other_ai_col)
                                 st.dataframe(df_processed.sort_values(by='student_number')[display_cols_processed])
                                 
                                 st.markdown("---")

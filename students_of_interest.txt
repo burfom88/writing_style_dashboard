@@ -1,0 +1,31 @@
+{
+    "metric": "average_sentence_length",
+    "baseline": {
+        "ai_score_type": "average_ai_score_across_all_questions",
+        "low_ai_threshold": 0.2,
+        "min_exams": 3,
+        "metric_range_min": 6.02,
+        "metric_range_max": 41.28,
+        "min_word_count": 0
+    },
+    "proposed_cheating_threshold": {
+        "calculation_method": "absolute z-score",
+        "threshold": "2.0",
+        "cheating_flagged_if": "greater_than"
+    },
+    "saved_at": "2025-04-02 14:20:39"
+}
+
+
+I'd like to add some new logic where if i select a student (from the drop down list), The display switches to show a full overview of the student. Im after a table with all submissions with all metrics and ai scores, the another table + graph of the min, P20, mean, min, P80, max and standard dev, of the baseline (non-ai results), then a drop down to choose a given exam_result to plot the metrics of that exam on the baseline statistics. Regardind the baseline, please provide inputs for the low_ai_score_threshold (max and/or average) and the minimum words.
+
+22007796
+24100652
+25101240: exam 60857
+
+24102180
+23001368
+24100212
+23001368
+21000027
+24101117
